@@ -1,20 +1,24 @@
-from flask import Flask, request, render_template
+from uuid import uuid4
+from flask import Flask, request, jsonify
 app = Flask(__name__)
 
-
-@app.route('/hello', methods=["GET", "POST"])
-@app.route('/hello/<name>', methods=["GET", "POST"])
-def hello(name=None):
-    if name != None:
-        return f"Hello {name}"
-    elif request.method == "POST":
-        return f"Hello {request.json['name']}"
+todos = []
 
 
-@app.route('/template')
-@app.route('/template/<name>')
-def hello_template(name=None):
-    return render_template("hello_world.html", name=name)
+@app.route('/todos', methods=["GET", "POST"])
+def create_todo():
+    if request.method == "POST":
+        new_todo = request.json
+        new_todo["_id"] = str(uuid4())
+        todos.append(new_todo)
+        return new_todo
+    else:
+        return jsonify(todos)
+
+
+@app.route('/todos/<id>', methods=["GET"])
+def get_todo_by_id(id=""):
+    return next(todo for todo in todos if todo['_id'] == id)
 
 
 @app.errorhandler(404)
